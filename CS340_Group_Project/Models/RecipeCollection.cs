@@ -5,9 +5,11 @@ using System.Threading.Tasks;
 
 namespace CS340_Group_Project.Models
 {
-    public class Certification
+    public class RecipeCollection
     {
         public int Id { get; set; }
-        public string Title { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public List<Recipe> Recipes { get; set; }
     }
 }

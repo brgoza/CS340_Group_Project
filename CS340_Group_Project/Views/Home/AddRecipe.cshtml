@@ -1,0 +1,33 @@
+﻿@model CS340_Group_Project.Models.RecipeAddViewModel
+<form action="AddRecipe" method="post">
+
+    <div class="row">
+        <div class="col-sm-8">
+            Name
+        </div>
+        <div class="col-sm-4">
+            Contributor
+        </div>
+    </div>
+    <div class="row">
+        <input asp-for="Recipe.Id" type="hidden" />
+        <div class="col-sm-8">
+            <input asp-for="Recipe.Name" type="text" />
+        </div>
+        <div class="col-sm-4">
+            <input asp-for="Recipe.Contributor" type="text" />
+        </div>
+
+    </div>
+
+    <div class="row">
+        Description
+    </div>
+
+    <div class="row">
+        <input asp-for="Recipe.Description" type="text" />
+        <input type="submit" value="Submit" class="submit" />
+    </div>
+</form>
+
+

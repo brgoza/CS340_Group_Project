@@ -1,0 +1,36 @@
+﻿@model CS340_Group_Project.Models.Recipe
+
+    <div class="row">
+        <div class="col-sm-4">
+            <h5>@Model.Name</h5>
+            <i>@Model.Contributor</i>
+        </div>
+        <div class="col-sm-8">
+            @Model.Description
+        </div>
+    </div>
+<hr />
+<div class="row">
+    <b>Components</b>
+</div>
+@foreach (var component in Model.Components)
+{
+    <div class="row">
+        @component.Quantity
+        @if (component.QuantityUnit != null)
+        {
+            @component.QuantityUnit.Name
+        }
+        @component.Ingredient.Name
+    </div>
+}
+<hr />
+<div class="row">
+    <b>Instructions</b>
+</div>
+<div class="row">
+    <p>@Model.Instructions</p>
+</div>
+<div class="row">
+    @Html.ActionLink("Edit","EditRecipe","Home",new { recipeId = Model.Id})
+</div>

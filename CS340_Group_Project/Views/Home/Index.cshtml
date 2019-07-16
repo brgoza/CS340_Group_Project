@@ -1,36 +1,20 @@
-﻿@model CS340_Group_Project.Models.ViewModels.PeopleIndexViewModel
+﻿@model CS340_Group_Project.Models.RecipeIndexViewModel
 
-<div class="container">
-    <div class="row">
-        <div class="col-md-3">
-            <p>Name</p>
-        </div>
-        <div class="col-md-3">
-            <p>Age</p>
-        </div>
-        <div class="col-md-3">
-            <p>Homeworld</p>
-        </div>
-        <div class="col-md-3">
-        </div>
+    <div class="container">
 
+
+        @foreach (var recipe in Model.Recipes)
+        {<hr />
+            <div class="row">
+                <div class="col-md-3">
+                    @Html.ActionLink(recipe.Name, "RecipeDetails", "Home", new { recipeId = recipe.Id }, null)
+                    <p><i>@recipe.Contributor</i></p>
+                </div>
+                <div class="col-md-9">
+                    <p>@recipe.Description</p>
+                </div>
+            </div>
+        }
+
+        @Html.ActionLink("Add", "AddRecipe")
     </div>
-
-
-    @foreach (var person in Model.People)
-    {
-        <div class="row">
-            <div class="col-md-3">
-                <p>@person.FirstName @person.LastName</p>
-            </div>
-            <div class="col-md-3">
-                <p>@person.Age</p>
-            </div>
-            <div class="col-md-3">
-                <p>@person.Homeworld.Name</p>
-            </div>
-            <div class="col-md-3">
-            </div>
-        </div>
-    }
-</div>
