@@ -11,7 +11,7 @@ namespace CS340_Group_Project.Models
         public string Name { get; set; }
         public string Contributor { get; set; }
         public string Description { get; set; }
-        public List<RecipeComponent> Components { get; set; }
+        public List<RecipeIngredient> RecipeIngredients { get; set; }
         public string Instructions { get; set; }
     }
 }

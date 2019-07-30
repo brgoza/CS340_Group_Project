@@ -25,10 +25,13 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item active">
-                    @Html.ActionLink("Recipes", "Index", "Home", null, new { @class = "nav-link"})
+                    @Html.ActionLink("Recipe Collections", "RecipeCollectionsIndex", "Home", null, new { @class = "nav-link" })
+                </li>
+                <li class="nav-item active">
+                    @Html.ActionLink("Recipes", "Index", "Home", null, new { @class = "nav-link" })
                 </li>
                 <li class="nav-item">
-                    @Html.ActionLink("Ingredients", "IngredientIndex", "Home", null, new {@class="nav-link"})
+                    @Html.ActionLink("Ingredients", "IngredientIndex", "Home", null, new { @class = "nav-link" })
                 </li>
             </ul>
         </div>

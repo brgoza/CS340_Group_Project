@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace CS340_Group_Project.Models
 {
-    public class RecipeComponent
+    public class RecipeIngredient
     {
         public int RecipeId { get; set; }
         public Recipe Recipe { get; set; }

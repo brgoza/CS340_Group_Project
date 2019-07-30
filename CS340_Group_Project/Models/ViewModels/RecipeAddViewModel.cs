@@ -10,7 +10,7 @@ namespace CS340_Group_Project.Models
         public Recipe Recipe { get; set; }
         public List<QuantityUnit> QuantityUnits { get; set; }
         public List<Ingredient> Ingredients { get; set; }
-        public List<RecipeComponent> Components { get; set; }
+        public List<RecipeIngredient> Components { get; set; }
         public List<RecipeCollection> RecipeCollections { get; set; }
     }
 }

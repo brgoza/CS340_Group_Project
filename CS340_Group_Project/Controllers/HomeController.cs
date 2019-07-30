@@ -50,14 +50,14 @@ namespace CS340_Group_Project.Controllers
             conn = new MySql.Data.MySqlClient.MySqlConnection(ConnectionString);
             r = conn.Query<Recipe>("SELECT * FROM Recipe WHERE Id = " + recipeId).FirstOrDefault();
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("SELECT * FROM recipe_component AS A LEFT JOIN ingredient AS B ON A.IngredientId = B.Id " +
+            sb.AppendFormat("SELECT * FROM recipe_ingredient AS A LEFT JOIN ingredient AS B ON A.IngredientId = B.Id " +
                  "LEFT JOIN quantity_unit AS C ON A.QuantityUnitId = C.Id WHERE RecipeId = {0}", recipeId);
-            r.Components = conn.Query<RecipeComponent, Ingredient, QuantityUnit, RecipeComponent>(sb.ToString(),
-                (component, ingredient, quantityUnit) =>
+            r.RecipeIngredients = conn.Query<RecipeIngredient, Ingredient, QuantityUnit, RecipeIngredient>(sb.ToString(),
+                (recipeIngredient, ingredient, quantityUnit) =>
                 {
-                    component.Ingredient = ingredient;
-                    component.QuantityUnit = quantityUnit;
-                    return component;
+                    recipeIngredient.Ingredient = ingredient;
+                    recipeIngredient.QuantityUnit = quantityUnit;
+                    return recipeIngredient;
                 }, splitOn: "Id").ToList();
             return r;
         }
@@ -87,26 +87,26 @@ namespace CS340_Group_Project.Controllers
         }
         #endregion
 
-        public ComponentsEditViewModel GetComponentsEditViewModel(int recipeId)
+        public RecipeIngredientsEditViewModel GetRecipeIngredientsEditViewModel(int recipeId)
         {
-            ComponentsEditViewModel vm = new ComponentsEditViewModel();
+            RecipeIngredientsEditViewModel vm = new RecipeIngredientsEditViewModel();
 
             IDbConnection conn;
             conn = new MySql.Data.MySqlClient.MySqlConnection(ConnectionString);
-            vm.Component = new RecipeComponent();
+            vm.Component = new RecipeIngredient();
             vm.Component.RecipeId = recipeId;
             vm.Component.Recipe = conn.Query<Recipe>("SELECT * FROM recipe WHERE Id = " + recipeId).FirstOrDefault();
-            vm.Component.Recipe.Components =
-                conn.Query<RecipeComponent>("SELECT * FROM recipe_component WHERE RecipeId = " + recipeId).ToList();
+            vm.Component.Recipe.RecipeIngredients =
+                conn.Query<RecipeIngredient>("SELECT * FROM recipe_component WHERE RecipeId = " + recipeId).ToList();
             vm.QuantityUnits = conn.Query<QuantityUnit>("SELECT * FROM quantity_unit").ToList();
             vm.Ingredients = conn.Query<Ingredient>("SELECT * FROM ingredient").ToList();
             return vm;
         }
-        public void AddComponentToDatabase(RecipeComponent component)
+        public void AddComponentToDatabase(RecipeIngredient component)
         {
             var conn = new MySql.Data.MySqlClient.MySqlConnection(ConnectionString);
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("INSERT INTO recipe_schema.recipe_component" + "({0},{1},{2},{3})  VALUES ('{4}', '{5}', '{6}', '{7}')", "RecipeId", "IngredientId", "Quantity", "QuantityUnitId", component.RecipeId, component.IngredientId, component.Quantity, component.QuantityUnitId);
+            sb.AppendFormat("INSERT INTO recipe_schema.recipe_ingredient" + "({0},{1},{2},{3})  VALUES ('{4}', '{5}', '{6}', '{7}')", "RecipeId", "IngredientId", "Quantity", "QuantityUnitId", component.RecipeId, component.IngredientId, component.Quantity, component.QuantityUnitId);
 
             conn.Query(sb.ToString());
         }
@@ -118,9 +118,9 @@ namespace CS340_Group_Project.Controllers
             conn = new MySql.Data.MySqlClient.MySqlConnection(ConnectionString);
             vm.Recipe = conn.Query<Recipe>("SELECT * FROM Recipe WHERE Id = " + recipeId).ToList().FirstOrDefault();
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("SELECT * FROM recipe_component AS A LEFT JOIN ingredient AS B ON A.IngredientId = B.Id " +
+            sb.AppendFormat("SELECT * FROM recipe_ingredient AS A LEFT JOIN ingredient AS B ON A.IngredientId = B.Id " +
                 "LEFT JOIN quantity_unit AS C ON A.QuantityUnitId = C.Id WHERE RecipeId = {0}", recipeId);
-            vm.Recipe.Components = conn.Query<RecipeComponent, Ingredient, QuantityUnit, RecipeComponent>(sb.ToString(),
+            vm.Recipe.RecipeIngredients = conn.Query<RecipeIngredient, Ingredient, QuantityUnit, RecipeIngredient>(sb.ToString(),
                 (component, ingredient, quantityUnit) =>
                 {
                     component.Ingredient = ingredient;
@@ -173,8 +173,8 @@ namespace CS340_Group_Project.Controllers
         [HttpPost]
         public IActionResult AddComponent(RecipeEditViewModel obj)
         {
-            obj.NewComponent.RecipeId = obj.RecipeId;
-            AddComponentToDatabase(obj.NewComponent);
+            obj.NewRecipeIngredient.RecipeId = obj.RecipeId;
+            AddComponentToDatabase(obj.NewRecipeIngredient);
             return RedirectToAction("EditRecipe", new { recipeId = obj.RecipeId });
         }
 
