@@ -17,13 +17,21 @@ namespace CS340_Group_Project.Controllers
     {
         public string ConnectionString =
             "Server=cs340maria-db.mariadb.database.azure.com; Port=3306; Database=recipe_schema; Uid=gozab@cs340maria-db; Pwd=Pa$$word; SslMode=Preferred;";
-        
+
         #region SQLInteractions
         public IngredientIndexViewModel GetIngredientIndexViewModel()
         {
             IngredientIndexViewModel vm = new IngredientIndexViewModel();
             var conn = new MySql.Data.MySqlClient.MySqlConnection(ConnectionString);
             vm.Ingredients = conn.Query<Ingredient>("SELECT * FROM ingredient").ToList();
+            return vm;
+        }
+
+        public RecipeCollectionIndexViewModel GetRecipeCollectionIndexViewModel()
+        {
+            RecipeCollectionIndexViewModel vm = new RecipeCollectionIndexViewModel();
+            var conn = new MySql.Data.MySqlClient.MySqlConnection(ConnectionString);
+            vm.RecipeCollections = conn.Query<RecipeCollection>("SELECT * FROM recipe_collection").ToList();
             return vm;
         }
 
@@ -43,6 +51,7 @@ namespace CS340_Group_Project.Controllers
             vm.Recipes = conn.Query<Recipe>("SELECT * FROM Recipe").ToList();
             return vm;
         }
+
         public Recipe GetRecipeDetails(int recipeId)
         {
             Recipe r = new Recipe();
@@ -60,12 +69,80 @@ namespace CS340_Group_Project.Controllers
                     return recipeIngredient;
                 }, splitOn: "Id").ToList();
             return r;
+
         }
+
         public RecipeAddViewModel GetRecipeAddViewModel()
         {
             RecipeAddViewModel vm = new RecipeAddViewModel();
             vm.Recipe = new Recipe();
             return vm;
+        }
+
+        public RecipeCollection GetRecipeCollectionDetails(int rcId)
+        {
+            RecipeCollection rc = new RecipeCollection();
+            var conn = new MySql.Data.MySqlClient.MySqlConnection(ConnectionString);
+            StringBuilder sb = new StringBuilder();
+            sb.AppendFormat("SELECT * FROM recipe_collection WHERE Id = {0}", rcId);
+            rc = conn.Query<RecipeCollection>(sb.ToString()).FirstOrDefault();
+            sb.Clear();
+            rc.Recipes = new List<Recipe>();
+            sb.AppendFormat("SELECT * FROM recipe_collection_recipe INNER JOIN recipe ON RecipeId = Id WHERE RecipeCollectionId = {0}", rcId);
+            rc.Recipes = conn.Query<Recipe>(sb.ToString()).ToList();
+            conn.Close();
+            return rc;
+        }
+
+
+        public RecipeCollectionEditViewModel GetRecipeCollectionEditViewModel(int rcId, string search)
+        {
+            RecipeCollectionEditViewModel vm = new RecipeCollectionEditViewModel();
+
+            var conn = new MySql.Data.MySqlClient.MySqlConnection(ConnectionString);
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendFormat("SELECT * FROM recipe_collection WHERE Id = {0}", rcId);
+            vm.RecipeCollection = conn.Query<RecipeCollection>(sb.ToString()).FirstOrDefault();
+            sb.Clear();
+
+            sb.AppendFormat("SELECT * FROM recipe_collection_recipe INNER JOIN recipe ON RecipeId = Id WHERE RecipeCollectionId = {0}", rcId);
+            vm.RecipeCollection.Recipes = conn.Query<Recipe>(sb.ToString()).ToList();
+            sb.Clear();
+
+            sb.AppendFormat("SELECT * FROM recipe WHERE name LIKE '%" + search + "%'");
+            vm.RecipesList = conn.Query<Recipe>(sb.ToString()).ToList();
+
+            conn.Close();
+            return vm;
+        }
+
+        public void UpdateCollectionDescription(RecipeCollectionEditViewModel obj)
+        {
+            var conn = new MySql.Data.MySqlClient.MySqlConnection(ConnectionString);
+            StringBuilder sb = new StringBuilder();
+            sb.AppendFormat("UPDATE recipe_collection\n");
+            sb.AppendFormat("SET description = '" + obj.RecipeCollection.Description + "'\n");
+            sb.AppendFormat("WHERE id = " + obj.RecipeCollection.Id);
+            conn.Execute(sb.ToString());
+        }
+
+        public void AddRecipeToCollectionInDatabase(int recipeId, int rcId)
+        {
+            var conn = new MySql.Data.MySqlClient.MySqlConnection(ConnectionString);
+            StringBuilder sb = new StringBuilder();
+            sb.AppendFormat("INSERT INTO recipe_collection_recipe (RecipeId, RecipeCollectionId) \n");
+            sb.AppendFormat("VALUES ({0}, {1})", recipeId, rcId);
+            conn.Execute(sb.ToString());
+        }
+
+        public int AddRecipeCollectionToDatabase(RecipeCollection rc)
+        {
+            var conn = new MySql.Data.MySqlClient.MySqlConnection(ConnectionString);
+            StringBuilder sb = new StringBuilder();
+            sb.AppendFormat("INSERT INTO recipe_schema.recipe_collection" + "({0},{1})  VALUES ('{2}', '{3}')", "Name", "Description", rc.Name, rc.Description);
+            conn.Query(sb.ToString());
+            return (int)(UInt64)conn.ExecuteScalar("SELECT LAST_INSERT_ID()");
         }
 
         public int AddRecipeToDatabase(Recipe recipe)
@@ -76,6 +153,7 @@ namespace CS340_Group_Project.Controllers
             conn.Query(sb.ToString());
             return (int)(UInt64)conn.ExecuteScalar("SELECT LAST_INSERT_ID()");
         }
+
         public void UpdateInstructions(Recipe recipe)
         {
             var conn = new MySql.Data.MySqlClient.MySqlConnection(ConnectionString);
@@ -85,7 +163,6 @@ namespace CS340_Group_Project.Controllers
             sb.AppendFormat("WHERE id = " + recipe.Id);
             conn.Query(sb.ToString());
         }
-        #endregion
 
         public RecipeIngredientsEditViewModel GetRecipeIngredientsEditViewModel(int recipeId)
         {
@@ -100,15 +177,20 @@ namespace CS340_Group_Project.Controllers
                 conn.Query<RecipeIngredient>("SELECT * FROM recipe_component WHERE RecipeId = " + recipeId).ToList();
             vm.QuantityUnits = conn.Query<QuantityUnit>("SELECT * FROM quantity_unit").ToList();
             vm.Ingredients = conn.Query<Ingredient>("SELECT * FROM ingredient").ToList();
+            conn.Close();
             return vm;
         }
         public void AddComponentToDatabase(RecipeIngredient component)
         {
             var conn = new MySql.Data.MySqlClient.MySqlConnection(ConnectionString);
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("INSERT INTO recipe_schema.recipe_ingredient" + "({0},{1},{2},{3})  VALUES ('{4}', '{5}', '{6}', '{7}')", "RecipeId", "IngredientId", "Quantity", "QuantityUnitId", component.RecipeId, component.IngredientId, component.Quantity, component.QuantityUnitId);
+            string qu = string.Empty;
+            qu = component.QuantityUnitId.ToString();
+            if (component.QuantityUnitId == 0) qu = "NULL";
+            sb.AppendFormat("INSERT INTO recipe_schema.recipe_ingredient" + "({0},{1},{2},{3})  VALUES ({4}, {5}, {6}, {7})", "RecipeId", "IngredientId", "Quantity", "QuantityUnitId", component.RecipeId, component.IngredientId, component.Quantity, qu);
 
             conn.Query(sb.ToString());
+            conn.Close();
         }
         public RecipeEditViewModel GetRecipeEditViewModel(int recipeId)
         {
@@ -116,7 +198,7 @@ namespace CS340_Group_Project.Controllers
 
             IDbConnection conn;
             conn = new MySql.Data.MySqlClient.MySqlConnection(ConnectionString);
-            vm.Recipe = conn.Query<Recipe>("SELECT * FROM Recipe WHERE Id = " + recipeId).ToList().FirstOrDefault();
+            vm.Recipe = conn.Query<Recipe>("SELECT * FROM recipe WHERE Id = " + recipeId).ToList().FirstOrDefault();
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("SELECT * FROM recipe_ingredient AS A LEFT JOIN ingredient AS B ON A.IngredientId = B.Id " +
                 "LEFT JOIN quantity_unit AS C ON A.QuantityUnitId = C.Id WHERE RecipeId = {0}", recipeId);
@@ -131,6 +213,67 @@ namespace CS340_Group_Project.Controllers
             vm.QuantityUnitsList = conn.Query<QuantityUnit>("SELECT * FROM quantity_unit").ToList();
             return vm;
         }
+
+        public void DeleteRecipeIngredientFromDatabase(int recipeId, int ingredientId)
+        {
+            IDbConnection conn;
+            conn = new MySql.Data.MySqlClient.MySqlConnection(ConnectionString);
+            conn.Execute("DELETE FROM recipe_ingredient WHERE recipeId = " + recipeId.ToString() + " AND ingredientId = " + ingredientId.ToString());
+            conn.Close();
+        }
+
+        public void DeleteRecipeFromDatabase(int recipeId)
+        {
+            IDbConnection conn;
+            conn = new MySql.Data.MySqlClient.MySqlConnection(ConnectionString);
+            conn.Execute("DELETE FROM recipe WHERE id = " + recipeId.ToString());
+            conn.Close();
+        }
+        #endregion
+
+
+        public IActionResult RecipeCollectionIndex()
+        {
+            RecipeCollectionIndexViewModel vm = GetRecipeCollectionIndexViewModel();
+            return View(vm);
+        }
+
+        public IActionResult RecipeCollectionDetails(int rcId)
+        {
+            RecipeCollection rc = GetRecipeCollectionDetails(rcId);
+            return View(rc);
+        }
+
+        public IActionResult AddRecipeCollection()
+        {
+            return View(new RecipeCollection());
+        }
+
+        [HttpPost]
+        public IActionResult AddRecipeCollection(RecipeCollection rc)
+        {
+            int rcId = AddRecipeCollectionToDatabase(rc);
+            return RedirectToAction("EditRecipeCollection", new { recipeCollectionId = rcId });
+        }
+
+        public IActionResult EditRecipeCollection(int rcId, string search)
+        {
+            RecipeCollectionEditViewModel vm = GetRecipeCollectionEditViewModel(rcId, search);
+            return View(vm);
+        }
+        public IActionResult AddRecipeToCollection(int recipeId, int rcId)
+        {
+            AddRecipeToCollectionInDatabase(recipeId, rcId);
+            return RedirectToAction("EditRecipeCollection", new { rcId, string.Empty });
+        }
+
+        [HttpPost]
+        public IActionResult ModifyCollectionDescription(RecipeCollectionEditViewModel obj)
+        {
+            UpdateCollectionDescription(obj);
+            return RedirectToAction("EditRecipeCollection", new { recipeCollectionId = obj.RecipeCollection.Id });
+        }
+
 
         public IActionResult Index()
         {
@@ -163,6 +306,18 @@ namespace CS340_Group_Project.Controllers
             return View(vm);
         }
 
+        public IActionResult DeleteRecipe(int recipeId)
+        {
+            DeleteRecipeFromDatabase(recipeId);
+            return RedirectToAction("Index");
+        }
+
+        public IActionResult DeleteRecipeIngredient(int recipeId, int ingredientId)
+        {
+            DeleteRecipeIngredientFromDatabase(recipeId, ingredientId);
+            return RedirectToAction("EditRecipe", new { recipeId = recipeId });
+        }
+
         [HttpPost]
         public IActionResult ModifyInstructions(RecipeEditViewModel obj)
         {
@@ -170,6 +325,7 @@ namespace CS340_Group_Project.Controllers
             UpdateInstructions(obj.Recipe);
             return RedirectToAction("EditRecipe", new { recipeId = obj.RecipeId });
         }
+
         [HttpPost]
         public IActionResult AddComponent(RecipeEditViewModel obj)
         {

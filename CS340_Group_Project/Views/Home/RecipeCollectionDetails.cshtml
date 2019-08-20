@@ -1,0 +1,18 @@
+﻿@model CS340_Group_Project.Models.RecipeCollection
+
+        <h5>@Model.Name</h5>
+        <p><i>@Model.Description</i></p>
+
+@foreach (var recipe in Model.Recipes)
+{<hr />
+    <div class="row">
+        <div class="col-md-3">
+            @Html.ActionLink(recipe.Name, "RecipeDetails", "Home", new { recipeId = recipe.Id }, null)
+            <p><i>@recipe.Contributor</i></p>
+        </div>
+        <div class="col-md-6">
+            <p>@recipe.Description</p>
+        </div>
+    </div>
+}
+@Html.ActionLink("Edit", "EditRecipeCollection","Home",new { rcId = Model.Id})

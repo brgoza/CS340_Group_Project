@@ -1,0 +1,17 @@
+﻿@model CS340_Group_Project.Models.RecipeCollectionIndexViewModel
+
+<div class="container">
+
+
+    @foreach (var collection in Model.RecipeCollections)
+    {<hr />
+        <div class="row">
+            <div class="col-md-3">
+                @Html.ActionLink(collection.Name, "RecipeCollectionDetails", "Home", new { rcId = collection.Id }, null)
+                <p><i>@collection.Description</i></p>
+            </div>
+        </div>
+    }
+    @Html.ActionLink("Add", "AddRecipeCollection")
+
+</div>

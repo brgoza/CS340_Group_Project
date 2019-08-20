@@ -1,0 +1,22 @@
+﻿@model CS340_Group_Project.Models.RecipeCollection
+<form action="AddRecipeCollection" method="post">
+
+    <div class="row">
+        <div class="col-sm-12">
+            Name
+        </div>
+    </div>
+    <div class="row">
+        <input asp-for="Id" type="hidden" />
+        <div class="col-sm-12">
+            <input asp-for="Name" type="text" />
+        </div>
+    </div>
+    <div class="row">
+        Description
+    </div>
+    <div class="row">
+        <input asp-for="Description" type="text" />
+    </div>
+    <input type="submit" value="Submit" class="submit" />
+</form>

@@ -1,4 +1,5 @@
 ﻿@model CS340_Group_Project.Models.RecipeEditViewModel
+<h4>Ingredients</h4>
 @foreach (var component in Model.Recipe.RecipeIngredients)
 {
     <div class="row">
@@ -11,7 +12,7 @@
             @component.Ingredient.Name
         </div>
         <div class="col-sm-2">
-            @Html.ActionLink("Delete", "DeleteComponent", "Home", new { recipeId = component.RecipeId, ingredientId = component.IngredientId })
+            @Html.ActionLink("Delete", "DeleteRecipeIngredient", "Home", new { recipeId = component.RecipeId, ingredientId = component.IngredientId })
         </div>
     </div>
 }
@@ -22,16 +23,17 @@
         <div class="col-sm-2">
             <input asp-for="NewRecipeIngredient.Quantity" class="form-control" type="text" />
         </div>
-        <div class="col-sm-5">
+        <div class="col-sm-4">
             <select id="quantityUnitList" asp-for="NewRecipeIngredient.QuantityUnitId">
-                <option></option>
+                <option value=null></option>
+
                 @foreach (var qu in Model.QuantityUnitsList)
                 {
                     <option value=@qu.Id>@qu.Name</option>
                 }
             </select>
         </div>
-        <div class="col-sm-5">
+        <div class="col-sm-4">
             <select id="ingredientList" asp-for="NewRecipeIngredient.IngredientId">
                 @foreach (var i in Model.IngredientsList)
                 {
@@ -39,26 +41,20 @@
                 }
             </select>
         </div>
-        <input type="submit" value="add" class="submit" />
+        <div class="col-sm-2">
+            <input type="submit" value="add" class="submit" />
+        </div>
     </div>
 </form>
 <hr />
 <form asp-action="ModifyInstructions" method="post">
     <input type="hidden" asp-for="RecipeId" />
     <div class="row">
-        <label for="instructionsTextArea">Instructions</label>
+        <h4>Instructions</h4>
         <textarea asp-for="Recipe.Instructions" class="form-control" id="instructionsTextArea" rows="5"></textarea>
         <input type="submit" value="submit" class="submit" />
     </div>
-
 </form>
-
-
-
-
-
-
-
 
 
 
